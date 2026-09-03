@@ -2,7 +2,6 @@ package com.snkrlab.productos.config;
 
 import com.snkrlab.productos.model.Producto;
 import com.snkrlab.productos.repository.ProductoRepository;
-import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,7 +17,7 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     @Override
-    public void run(String @NonNull ... args) {
+    public void run(String ... args) {
         if (productoRepository.count() == 0) {
             Producto p1 = Producto.builder()
                     .nombre("Air Force 1 '07")
