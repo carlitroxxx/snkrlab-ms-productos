@@ -24,6 +24,19 @@ public class ProductoService {
     public Producto guardar(Producto producto){
         return productoRepository.save(producto);
     }
+    public Optional<Producto> actualizar(Long id, Producto producto) {
+        return productoRepository.findById(id)
+                .map(productoExistente -> {
+                    productoExistente.setNombre(producto.getNombre());
+                    productoExistente.setMarca(producto.getMarca());
+                    productoExistente.setModelo(producto.getModelo());
+                    productoExistente.setPrecio(producto.getPrecio());
+                    productoExistente.setStock(producto.getStock());
+                    productoExistente.setDescripcion(producto.getDescripcion());
+                    productoExistente.setImagen(producto.getImagen());
+                    return productoRepository.save(productoExistente);
+                });
+    }
     public void eliminar(Long id){
         productoRepository.deleteById(id);
     }
