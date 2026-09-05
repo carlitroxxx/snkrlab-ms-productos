@@ -5,6 +5,13 @@ spring:
   application:
     name: snkrlab-ms-productos
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AZURE_ISSUER_URI:https://login.microsoftonline.com/}
+          tenant-id: ${AZURE_TENANT_ID:db9d1cc0-8c32-4341-bc72-c348daf096fb}
+
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/snkrlab_products_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true}
     username: ${DB_USERNAME:root}
