@@ -26,7 +26,7 @@ public class DataInitializer implements CommandLineRunner {
                     .precio(109990)
                     .stock(15)
                     .descripcion("Zapatilla clasica de cuero blanco.")
-                    .imagen("https://example.com/nike-af1.jpg")
+                    .imagen("/images/nike-air-force1-07.jpg")
                     .build();
 
             Producto p2 = Producto.builder()
@@ -36,7 +36,7 @@ public class DataInitializer implements CommandLineRunner {
                     .precio(89990)
                     .stock(10)
                     .descripcion("Estilo retro urbano de corte bajo.")
-                    .imagen("https://example.com/adidas-forum.jpg")
+                    .imagen("/images/adidas-campus-00s-gris-blanco.jpg")
                     .build();
 
             Producto p3 = Producto.builder()
@@ -46,7 +46,7 @@ public class DataInitializer implements CommandLineRunner {
                     .precio(159990)
                     .stock(5)
                     .descripcion("Edicion clasica de basquetbol.")
-                    .imagen("https://example.com/jordan1.jpg")
+                    .imagen("/images/jordan-air-retro-4-military-black.jpg")
                     .build();
 
             productoRepository.saveAll(List.of(p1, p2, p3));
