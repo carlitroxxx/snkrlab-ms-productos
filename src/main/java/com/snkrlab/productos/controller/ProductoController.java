@@ -51,7 +51,7 @@ public class ProductoController {
         return ResponseEntity.notFound().build();
     }
 
-    @PatchMapping("/{id}/stock")
+    @PutMapping("/{id}/stock")
     public ResponseEntity<Producto> reducirStock(@PathVariable Long id, @RequestParam Integer cantidad) {
         Producto actualizado = productoService.reducirStock(id, cantidad);
         return ResponseEntity.ok(actualizado);
