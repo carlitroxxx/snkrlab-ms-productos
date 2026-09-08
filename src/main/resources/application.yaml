@@ -1,7 +1,6 @@
 server:
   port: 8082
-  servlet:
-    context-path: /desarrollo
+
 spring:
   application:
     name: snkrlab-ms-productos
