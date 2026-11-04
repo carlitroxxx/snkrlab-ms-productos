@@ -6,7 +6,7 @@ Microservicio de catálogo del sistema **SNKRLAB**. Expone el CRUD de productos 
 
 - Java 21 · Spring Boot 4.1.1
 - Spring Data JPA + MySQL Connector/J
-- Spring Security + OAuth2 Resource Server (JWT de Azure AD)
+- Spring Security + OAuth2 Resource Server (JWT; revisar integración con Cognito según el entorno)
 - Lombok
 - Docker
 
@@ -94,7 +94,7 @@ Todas las lecturas (`GET`) son públicas; el resto de operaciones requiere `Auth
 
 ## Consumido por
 
-`snkrlab-ms-carrito` usa `GET /api/v1/productos/{id}` y `PUT /api/v1/productos/{id}/stock` (vía Feign, a través del API Gateway) para validar productos y descontar stock en el checkout.
+`snkrlab-ms-carrito` usa `GET /api/v1/productos/{id}` y `PUT /api/v1/productos/{id}/stock` (vía Feign, a través del API Gateway) para consultar productos; el descuento de stock del checkout también se comunica mediante RabbitMQ.
 
 ## Seguridad
 
@@ -103,3 +103,10 @@ Todas las lecturas (`GET`) son públicas; el resto de operaciones requiere `Auth
 ## Despliegue
 
 Despliegue en una instancia EC2 junto a su propio contenedor MySQL, y quedar expuesto mediante rutas explícitas de AWS API Gateway (una por cada endpoint de la tabla anterior).
+
+## Actualización EV2 — catálogo, roles y mensajería
+
+- Se conserva el catálogo público (`GET /api/v1/productos` y `GET /api/v1/productos/{id}`). Las modificaciones de productos están restringidas al rol **Administrador** según la configuración de seguridad.
+- El descuento de stock se procesa también mediante **RabbitMQ**: el listener `StockListener` consume de `productos.stock.queue`, enlazada con `carrito.exchange` mediante la routing key `stock.reducir`.
+- El flujo asíncrono de stock debe considerarse al explicar el checkout; la descripción anterior de descuento únicamente mediante Feign ya no refleja toda la arquitectura.
+- La compatibilidad de autenticación Azure AD/Cognito debe probarse con los tokens utilizados por el frontend.
