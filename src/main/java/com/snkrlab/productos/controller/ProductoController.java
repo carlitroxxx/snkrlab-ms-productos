@@ -2,6 +2,9 @@ package com.snkrlab.productos.controller;
 
 import com.snkrlab.productos.model.Producto;
 import com.snkrlab.productos.service.ProductoService;
+import com.snkrlab.productos.kafka.NavegacionPublisher;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +15,11 @@ import java.util.List;
 @RequestMapping("api/v1/productos")
 public class ProductoController {
     private final ProductoService productoService;
+    private final NavegacionPublisher navegacion;
 
-    public ProductoController(ProductoService productoService){
+    public ProductoController(ProductoService productoService, NavegacionPublisher navegacion){
         this.productoService = productoService;
+        this.navegacion = navegacion;
     }
 
     @GetMapping
@@ -23,9 +28,13 @@ public class ProductoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> obtenerPorId(@PathVariable Long id){
+    public ResponseEntity<Producto> obtenerPorId(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
         return productoService.obtenerPorId(id)
-                .map(ResponseEntity::ok)
+                .map(producto -> {
+                    String usuario = jwt == null ? null : jwt.getClaimAsString("oid");
+                    navegacion.productoVisto(producto.getId(), usuario);
+                    return ResponseEntity.ok(producto);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
