@@ -10,4 +10,11 @@ import lombok.NoArgsConstructor;
 public class StockReducidoMessage {
     private Long productoId;
     private Integer cantidad;
+    private String operacionId;
+    private Long ordenId;
+
+    public StockReducidoMessage(Long productoId, Integer cantidad) {
+        this.productoId = productoId;
+        this.cantidad = cantidad;
+    }
 }

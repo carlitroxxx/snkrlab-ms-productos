@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @Service
 public class ProductoService {
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
     private final ProductoRepository productoRepository;
 
     public ProductoService(ProductoRepository productoRepository){
@@ -24,12 +26,19 @@ public class ProductoService {
     public Optional<Producto> obtenerPorId(Long id){
         return productoRepository.findById(id);
     }
+    @Transactional
     public Producto guardar(Producto producto){
+        if (producto.getId() != null) {
+            productoRepository.bloquear(producto.getId()).ifPresent(existente ->
+                    entityManager.refresh(existente, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE));
+        }
         return productoRepository.save(producto);
     }
+    @Transactional
     public Optional<Producto> actualizar(Long id, Producto producto) {
-        return productoRepository.findById(id)
+        return productoRepository.bloquear(id)
                 .map(productoExistente -> {
+                    entityManager.refresh(productoExistente, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
                     productoExistente.setNombre(producto.getNombre());
                     productoExistente.setMarca(producto.getMarca());
                     productoExistente.setModelo(producto.getModelo());
@@ -50,17 +59,17 @@ public class ProductoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad a descontar debe ser mayor a 0.");
         }
 
+        int modificados = productoRepository.descontarDisponible(id, cantidad);
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Producto no encontrado: " + id));
 
-        if (producto.getStock() < cantidad) {
+        if (modificados == 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Stock insuficiente para " + producto.getNombre()
                             + ". Disponible: " + producto.getStock() + ", solicitado: " + cantidad);
         }
 
-        producto.setStock(producto.getStock() - cantidad);
-        return productoRepository.save(producto);
+        return producto;
     }
 }
