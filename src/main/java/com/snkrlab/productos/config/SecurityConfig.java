@@ -2,6 +2,10 @@ package com.snkrlab.productos.config;
 
 import java.util.Arrays;
 import java.util.List;
+import com.nimbusds.jwt.JWTParser;
+import java.text.ParseException;
+import org.springframework.security.oauth2.jwt.BadJwtException;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +38,12 @@ public class SecurityConfig {
 
     @Value("${AZURE_CLIENT_ID:706b4543-805e-4c53-8da4-aaf4ff4a4706}")
     private String azureClientId;
+
+    @Value("${app.seguridad.cognito-issuer}")
+    private String cognitoIssuer;
+
+    @Value("${app.seguridad.cognito-client-id}")
+    private String cognitoClientId;
 
     @Bean
     public JwtDecoder jwtDecoder() {
@@ -91,7 +101,25 @@ public class SecurityConfig {
                 )
         );
 
-        return decoder;
+        NimbusJwtDecoder cognito = NimbusJwtDecoder.withJwkSetUri(
+                cognitoIssuer + "/.well-known/jwks.json").build();
+        cognito.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                JwtValidators.createDefaultWithIssuer(cognitoIssuer),
+                new JwtClaimValidator<String>("token_use", "access"::equals),
+                new JwtClaimValidator<String>("client_id", cognitoClientId::equals),
+                new JwtClaimValidator<String>("sub", sub -> sub != null && !sub.isBlank())
+        ));
+        return token -> {
+            String emisor;
+            try {
+                emisor = JWTParser.parse(token).getJWTClaimsSet().getIssuer();
+            } catch (ParseException | IllegalArgumentException ex) {
+                throw new BadJwtException("Formato de token invalido.");
+            }
+            if (cognitoIssuer.equals(emisor)) return cognito.decode(token);
+            if (emisor != null && emisores.contains(emisor)) return decoder.decode(token);
+            throw new BadJwtException("Emisor no permitido.");
+        };
     }
 
     private OAuth2TokenValidatorResult errorToken(String mensaje) {
@@ -111,7 +139,9 @@ public class SecurityConfig {
         JwtAuthenticationConverter converter =
                 new JwtAuthenticationConverter();
 
-        converter.setJwtGrantedAuthoritiesConverter(roles);
+        converter.setJwtGrantedAuthoritiesConverter(jwt ->
+                cognitoIssuer.equals(jwt.getClaimAsString("iss"))
+                        ? List.of() : roles.convert(jwt));
 
         return converter;
     }

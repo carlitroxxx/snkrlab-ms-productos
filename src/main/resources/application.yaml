@@ -1,6 +1,11 @@
 server:
   port: 8082
 
+app:
+  seguridad:
+    cognito-issuer: ${COGNITO_ISSUER:https://cognito-idp.us-east-1.amazonaws.com/us-east-1_KTqPu7kft}
+    cognito-client-id: ${COGNITO_CLIENT_ID:1jpasvcj1ms4c2028sm3snkqvd}
+
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

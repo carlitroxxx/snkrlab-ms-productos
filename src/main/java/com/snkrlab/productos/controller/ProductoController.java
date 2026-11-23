@@ -10,12 +10,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("api/v1/productos")
 public class ProductoController {
     private final ProductoService productoService;
     private final NavegacionPublisher navegacion;
+    @Value("${app.seguridad.cognito-issuer}")
+    private String cognitoIssuer;
 
     public ProductoController(ProductoService productoService, NavegacionPublisher navegacion){
         this.productoService = productoService;
@@ -32,6 +35,10 @@ public class ProductoController {
         return productoService.obtenerPorId(id)
                 .map(producto -> {
                     String usuario = jwt == null ? null : jwt.getClaimAsString("oid");
+                    if (jwt != null && cognitoIssuer.equals(jwt.getClaimAsString("iss"))) {
+                        String sub = jwt.getSubject();
+                        usuario = sub == null || sub.isBlank() ? null : "cognito:" + sub;
+                    }
                     navegacion.productoVisto(producto.getId(), usuario);
                     return ResponseEntity.ok(producto);
                 })
