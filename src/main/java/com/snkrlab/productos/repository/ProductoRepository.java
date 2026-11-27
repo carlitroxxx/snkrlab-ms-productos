@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
+    java.util.List<Producto> findByActivoTrue();
     @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true, clearAutomatically = true)
     @org.springframework.data.jpa.repository.Query("update Producto p set p.stock = p.stock - :cantidad where p.id = :id and p.stock >= :cantidad")
     int descontarDisponible(@org.springframework.data.repository.query.Param("id") Long id,

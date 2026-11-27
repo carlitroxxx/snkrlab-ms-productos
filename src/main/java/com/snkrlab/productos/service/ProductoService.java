@@ -21,13 +21,17 @@ public class ProductoService {
     }
 
     public List<Producto> obtenerTodos(){
-        return productoRepository.findAll();
+        return productoRepository.findByActivoTrue();
     }
+    public List<Producto> obtenerAdministracion() { return productoRepository.findAll(); }
     public Optional<Producto> obtenerPorId(Long id){
-        return productoRepository.findById(id);
+        return productoRepository.findById(id).filter(p -> Boolean.TRUE.equals(p.getActivo()));
     }
     @Transactional
     public Producto guardar(Producto producto){
+        if (producto.getId() != null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Use PUT para editar.");
+        producto.setActivo(true);
         if (producto.getId() != null) {
             productoRepository.bloquear(producto.getId()).ifPresent(existente ->
                     entityManager.refresh(existente, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE));
@@ -49,8 +53,16 @@ public class ProductoService {
                     return productoRepository.save(productoExistente);
                 });
     }
+    @Transactional
     public void eliminar(Long id){
-        productoRepository.deleteById(id);
+        cambiarActivo(id, false);
+    }
+    @Transactional
+    public Producto cambiarActivo(Long id, boolean activo) {
+        Producto producto = productoRepository.bloquear(id).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.NOT_FOUND));
+        producto.setActivo(activo);
+        return productoRepository.save(producto);
     }
 
     @Transactional

@@ -16,6 +16,9 @@ public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean activo = true;
     @Column(nullable = false)
     private String nombre;
     @Column(nullable = false)

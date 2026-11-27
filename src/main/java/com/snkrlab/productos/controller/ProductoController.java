@@ -60,12 +60,15 @@ public class ProductoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (productoService.obtenerPorId(id).isPresent()) {
-            productoService.eliminar(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        productoService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/administracion")
+    public List<Producto> administracion() { return productoService.obtenerAdministracion(); }
+
+    @PutMapping("/{id}/reactivacion")
+    public Producto reactivar(@PathVariable Long id) { return productoService.cambiarActivo(id, true); }
 
     @PutMapping("/{id}/stock")
     public ResponseEntity<Producto> reducirStock(@PathVariable Long id, @RequestParam Integer cantidad) {

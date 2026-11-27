@@ -181,6 +181,7 @@ public class SecurityConfig {
                         )
                 )
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/administracion").hasRole("Administrador")
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/v1/productos",
